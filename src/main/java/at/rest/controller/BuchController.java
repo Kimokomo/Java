@@ -12,7 +12,6 @@ import java.util.List;
 
 @Path("/books")
 @Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
 public class BuchController {
 
 
@@ -45,7 +44,6 @@ public class BuchController {
 
     @GET
     @Path("/paginated/{page}/{size}")
-    @Produces(MediaType.APPLICATION_JSON)
     public BuchPageDTO getBooksPaginatedWithCount(
             @PathParam("page") int page,
             @PathParam("size") int size) {
