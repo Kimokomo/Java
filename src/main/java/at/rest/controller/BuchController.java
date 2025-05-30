@@ -19,7 +19,7 @@ public class BuchController {
     private BuchService buchService;
 
     @GET
-    public List<BuchDTO> getUsersListdb() {
+    public List<BuchDTO> getBooksList() {
         return buchService.getAllBooks();
     }
 
