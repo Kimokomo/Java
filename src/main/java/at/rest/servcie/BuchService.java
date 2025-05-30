@@ -1,6 +1,7 @@
 package at.rest.servcie;
 
 import at.rest.dtos.BuchDTO;
+import at.rest.dtos.BuchPageDTO;
 import at.rest.mapper.BuchMapper;
 import at.rest.model.Buch;
 import at.rest.repositories.BuchRepository;
@@ -49,5 +50,30 @@ public class BuchService {
         buchRepository.save(existingBuch);
     }
 
+    public List<BuchDTO> getBooksPaginated(int page, int size) {
+        return buchRepository.getBooksPaginated(page, size)
+                .stream()
+                .map(buchMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public BuchPageDTO getBooksPaginatedWithCount(int page, int size) {
+        List<BuchDTO> content = getBooksPaginated(page, size);
+        long totalItems = countBooks();
+        int totalPages = (int) Math.ceil((double) totalItems / size);
+
+        BuchPageDTO pageDTO = new BuchPageDTO();
+        pageDTO.setContent(content);
+        pageDTO.setPage(page);
+        pageDTO.setSize(size);
+        pageDTO.setTotalItems(totalItems);
+        pageDTO.setTotalPages(totalPages);
+
+        return pageDTO;
+    }
+
+    public long countBooks() {
+        return buchRepository.countBooks();
+    }
 
 }

@@ -1,6 +1,7 @@
-package at.rest.resources;
+package at.rest.controller;
 
 import at.rest.dtos.BuchDTO;
+import at.rest.dtos.BuchPageDTO;
 import at.rest.servcie.BuchService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -40,6 +41,15 @@ public class BuchController {
     public Response deleteBook(@PathParam("id") Long id) {
         buchService.deleteBookById(id);
         return Response.noContent().build();  // 204 No Content bei Erfolg
+    }
+
+    @GET
+    @Path("/paginated/{page}/{size}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public BuchPageDTO getBooksPaginatedWithCount(
+            @PathParam("page") int page,
+            @PathParam("size") int size) {
+        return buchService.getBooksPaginatedWithCount(page, size);
     }
 }
 
