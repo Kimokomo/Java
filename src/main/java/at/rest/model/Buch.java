@@ -11,7 +11,7 @@ import lombok.*;
 @ToString
 @Builder
 @Entity
-@Table(name = "buecher", schema = "slice")
+@Table(name = "buecher")
 public class Buch {
 
     @Id

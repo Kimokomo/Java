@@ -1,12 +1,12 @@
 package at.rest.dtos;
 
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@NoArgsConstructor               // <- Für JSON-B (deserialization)
+@AllArgsConstructor              // <- Für Lombok @Builder intern
 @Builder
 public class BuchDTO {
     private Long id;

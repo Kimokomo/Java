@@ -20,7 +20,11 @@ public class BuchRepository {
 
     @Transactional
     public void save(Buch buch) {
-        em.persist(buch);
+        if (buch.getId() == null) {
+            em.persist(buch); // Neues Buch
+        } else {
+            em.merge(buch);   // Existierendes Buch → Update
+        }
     }
 
     @Transactional
@@ -46,7 +50,6 @@ public class BuchRepository {
             }
         }
     }
-
 
     public List<Buch> getBooksPaginated(int page, int size) {
         int offset = (page > 0) ? (page - 1) * size : 0;
