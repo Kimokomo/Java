@@ -18,8 +18,8 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public boolean checkPassword(User user, String passwordInput) {
-        return BCrypt.checkpw(passwordInput, user.getPasswordHash());
+    public boolean checkPassword(User user) {
+        return BCrypt.checkpw(user.getPassword(), user.getPasswordHash());
     }
 
     public User registerUser(String username, String passwordInput, String role, String email) {

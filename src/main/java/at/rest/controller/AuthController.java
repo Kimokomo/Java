@@ -39,7 +39,7 @@ public class AuthController {
 
         User user = userOpt.get();
 
-        if (!userService.checkPassword(user, credentials.getPasswordHash())) {
+        if (!userService.checkPassword(user)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
@@ -69,7 +69,7 @@ public class AuthController {
                     .build();
         }
 
-        userService.registerUser(user.getUsername(), user.getPasswordHash(), "user", user.getEmail());
+        userService.registerUser(user.getUsername(), user.getPassword(), "user", user.getEmail());
 
         return Response.status(Response.Status.CREATED).build();
     }
