@@ -6,12 +6,14 @@ import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.Provider;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 
 import java.io.IOException;
 import java.security.Key;
+import java.security.Principal;
 import java.util.Date;
 
 @Provider
@@ -28,7 +30,7 @@ public class JWTAuthFilter implements ContainerRequestFilter {
 
         String path = requestContext.getUriInfo().getPath();
 
-        // 1. OPTIONS-Anfragen durchlassen (Preflight)
+        // 1. OPTIONS-Anfragen durchlassen (CORS Preflight)
         if (requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
             return;
         }
@@ -49,23 +51,70 @@ public class JWTAuthFilter implements ContainerRequestFilter {
         String token = authHeader.substring("Bearer ".length());
 
         try {
-            // 4. Token prüfen
+            // 4. Token prüfen Claims lesen
             Jws<Claims> claimsJws = Jwts.parserBuilder()
                     .setSigningKey(SIGNING_KEY)
                     .build()
                     .parseClaimsJws(token);
 
-            // Optional: Benutzername oder Rollen auslesen
-            String username = claimsJws.getBody().getSubject();
-            Date expiration = claimsJws.getBody().getExpiration();
+            Claims claims = claimsJws.getBody();
 
-            // Optional: Ablauf prüfen (normalerweise macht das jjwt automatisch)
-            if (expiration.before(new Date())) {
+            // Ablauf prüfen (jjwt macht das eigentlich automatisch, hier doppelt geprüft)
+            Date expiration = claims.getExpiration();
+            if (expiration == null || expiration.before(new Date())) {
                 abort(requestContext);
+                return;
+            }
+
+            // Rolle auslesen
+            String role = claims.get("role", String.class);
+            if (role == null) {
+                abort(requestContext);
+                return;
+            }
+
+
+            // Benutzername aus "sub" Claim auslesen
+            final String username = claims.getSubject();
+
+            // SecurityContext setzen, damit Benutzerinfos später verfügbar sind
+            final SecurityContext currentSecurityContext = requestContext.getSecurityContext();
+            requestContext.setSecurityContext(new SecurityContext() {
+                @Override
+                public Principal getUserPrincipal() {
+                    return () -> username;
+                }
+
+                @Override
+                public boolean isUserInRole(String roleName) {
+                    return role.equals(roleName);
+                }
+
+                @Override
+                public boolean isSecure() {
+                    return currentSecurityContext != null && currentSecurityContext.isSecure();
+                }
+
+                @Override
+                public String getAuthenticationScheme() {
+                    return "Bearer";
+                }
+            });
+
+
+            // Pfad-Rollen-Prüfung
+            if (path.startsWith("admin") && !(role.equals("admin") || role.equals("superAdmin"))) {
+                abort(requestContext);
+                return;
+            }
+
+            // Nur Benutzer mit Rolle "superAdmin" dürfen Pfade unter /superadmin aufrufen.
+            if (path.startsWith("superadmin") && !role.equals("superAdmin")) {
+                abort(requestContext);
+                return;
             }
 
         } catch (JwtException e) {
-            // Ungültiges oder manipuliertes Token
             abort(requestContext);
         }
     }
