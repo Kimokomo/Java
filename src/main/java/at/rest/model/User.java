@@ -1,21 +1,38 @@
 package at.rest.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Entity
-@Table(name = "users") // Tabelle in DB
+import java.time.LocalDate;
+
+
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@Entity
+@Table(name = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
+    @SequenceGenerator(name = "user_seq", sequenceName = "user_sequence", allocationSize = 1)
     private Long id;
+
+
+    private String firstname;
+    private String lastname;
+    private Integer age;
+
+    @Column(name = "birthdate")
+    private LocalDate dateOfBirth;
 
     @Column(unique = true, nullable = false)
     private String username;
+
+    @Column(unique = true, nullable = false)
+    private String email;
 
     @Column(name = "password_plain")
     private String password;
@@ -24,5 +41,5 @@ public class User {
     private String passwordHash;
 
     @Column(nullable = false)
-    private String role; // z.B. "user", "admin", "superAdmin"
+    private String role; // "user", "admin", "superAdmin" // besser enum
 }

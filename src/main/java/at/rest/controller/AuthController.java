@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.SecurityContext;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Optional;
 
 @Path("/auth")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -30,7 +31,7 @@ public class AuthController {
     @POST
     @Path("/login")
     public Response login(User credentials) {
-        var userOpt = userService.findByUsername(credentials.getUsername());
+        Optional<User> userOpt = userService.findByUsername(credentials.getUsername());
 
         if (userOpt.isEmpty()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -38,7 +39,7 @@ public class AuthController {
 
         User user = userOpt.get();
 
-        if (!userService.checkPasswordEasy(user, credentials.getPassword())) {
+        if (!userService.checkPassword(user, credentials.getPasswordHash())) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
@@ -54,17 +55,21 @@ public class AuthController {
                 .build();
     }
 
-    // Registrierung
+
     @POST
     @Path("/register")
     public Response register(User user) {
+
+        // DTO in Entity umwandeln
+        // User user = UserMapper.INSTANCE.toEntity(dto);
+
         if (userService.findByUsername(user.getUsername()).isPresent()) {
             return Response.status(Response.Status.CONFLICT)
                     .entity("Username already exists")
                     .build();
         }
 
-        userService.registerUser(user.getUsername(), user.getPasswordHash(), "user");
+        userService.registerUser(user.getUsername(), user.getPasswordHash(), "user", user.getEmail());
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -73,6 +78,7 @@ public class AuthController {
     @Path("/userinfo")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserInfo(@Context SecurityContext securityContext) {
+
         if (securityContext == null || securityContext.getUserPrincipal() == null) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -94,5 +100,4 @@ public class AuthController {
 
         return Response.ok(userInfo).build();
     }
-
 }

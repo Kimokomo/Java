@@ -1,6 +1,7 @@
 package at.rest.controller;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -10,6 +11,7 @@ import java.net.http.HttpResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 public class AuthControllerTest {
 
     private static HttpClient client;

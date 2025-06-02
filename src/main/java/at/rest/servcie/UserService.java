@@ -22,18 +22,14 @@ public class UserService {
         return BCrypt.checkpw(passwordInput, user.getPasswordHash());
     }
 
-    public boolean checkPasswordEasy(User user, String passwordInput) {
-        // Einfacher Vergleich
-        return user.getPassword().equals(passwordInput);
-    }
-
-    public User registerUser(String username, String passwordInput, String role) {
+    public User registerUser(String username, String passwordInput, String role, String email) {
         String hashed = BCrypt.hashpw(passwordInput, BCrypt.gensalt());
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordInput);
         user.setPasswordHash(hashed);
         user.setRole(role);
+        user.setEmail(email);
         userRepository.save(user);
         return user;
     }
