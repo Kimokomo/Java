@@ -11,4 +11,5 @@
 
 
 # Secrets
-src/main/resources/mail.properties
+src/main/resources/mail-dev.properties
+src/main/resources/mail-prod.properties
