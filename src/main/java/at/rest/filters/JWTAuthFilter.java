@@ -1,29 +1,47 @@
 package at.rest.filters;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
-import jakarta.ws.rs.core.SecurityContext;
-import jakarta.ws.rs.ext.Provider;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.ext.Provider;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.Key;
 import java.security.Principal;
 import java.util.Date;
+import java.util.Properties;
 
 @Provider
 @Priority(Priorities.AUTHENTICATION)
 public class JWTAuthFilter implements ContainerRequestFilter {
 
-    // Achtung: Mindestens 256-bit (32-Byte) lang bei HS256!
-    private static final String SECRET_KEY = "mein-super-geheimer-key-1234567890123456";
+    private static final Key SIGNING_KEY;
 
-    private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    static {
+        String secretKey = loadSecretKey();
+        SIGNING_KEY = Keys.hmacShaKeyFor(secretKey.getBytes());
+    }
+
+    private static String loadSecretKey() {
+        Properties properties = new Properties();
+        try (InputStream is = JWTAuthFilter.class.getClassLoader().getResourceAsStream("jwt.properties")) {
+            if (is == null) throw new RuntimeException("jwt.properties nicht gefunden");
+            properties.load(is);
+            return properties.getProperty("jwt.secret.key");
+        } catch (IOException e) {
+            throw new RuntimeException("Fehler beim Laden des Secret Keys", e);
+        }
+    }
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -36,7 +54,7 @@ public class JWTAuthFilter implements ContainerRequestFilter {
         }
 
         // 2. Öffentliche Pfade erlauben (Whitelist)
-        if (path.equals("/auth/confirm") ||path.equals("/auth/login") || path.equals("") || path.equals("/hello") || path.equals("/auth/register")) {
+        if (path.equals("/auth/confirm") || path.equals("/auth/login") || path.equals("") || path.equals("/hello") || path.equals("/auth/register")) {
             return;
         }
 

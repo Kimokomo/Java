@@ -38,7 +38,11 @@ build/
 .DS_Store
 
 # My Secrets
+.idea/
+
 src/main/resources/mail-dev.properties
 src/main/resources/mail-prod.properties
+src/main/resources/jwt.properties
 
-.idea/
+
+
