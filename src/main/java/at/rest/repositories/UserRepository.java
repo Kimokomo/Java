@@ -20,6 +20,12 @@ public class UserRepository {
         return query.getResultStream().findFirst();
     }
 
+    public Optional<User> findByConfirmationToken(String token) {
+        var query = em.createQuery("SELECT u FROM User u WHERE u.confirmationToken = :token", User.class);
+        query.setParameter("token", token);
+        return query.getResultStream().findFirst();
+    }
+
     @Transactional
     public void save(User user) {
         if (user.getId() == null) {

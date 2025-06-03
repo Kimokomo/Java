@@ -24,6 +24,9 @@ public class User {
     private String firstname;
     private String lastname;
     private Integer age;
+    private boolean confirmed;
+    @Column(name = "confirmation_token")
+    private String confirmationToken;
 
     @Column(name = "birthdate")
     private LocalDate dateOfBirth;

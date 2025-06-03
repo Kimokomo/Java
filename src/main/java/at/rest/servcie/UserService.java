@@ -18,9 +18,22 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public boolean checkPassword(User user) {
-        return BCrypt.checkpw(user.getPassword(), user.getPasswordHash());
+    public Optional<User> findByConfirmationToken(String token) {
+        return userRepository.findByConfirmationToken(token);
     }
+
+    public void save(User user) {
+        userRepository.save(user);  // nutzt persist oder merge je nach Zustand
+    }
+
+    public void update(User user) {
+        userRepository.save(user);  // gleiche Methode, da save() beides abdeckt
+    }
+
+    public boolean checkPassword(String rawPassword, String passwordHash) {
+        return BCrypt.checkpw(rawPassword, passwordHash);
+    }
+
 
     public User registerUser(String username, String passwordInput, String role, String email) {
         String hashed = BCrypt.hashpw(passwordInput, BCrypt.gensalt());
