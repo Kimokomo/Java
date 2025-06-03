@@ -26,8 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthController {
 
-    private static final String SECRET_KEY = "mein-super-geheimer-key-1234567890123456";
-    private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    private static final String JWT_SECRET = System.getProperty("jwt.secret.key");
+    private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(JWT_SECRET.getBytes());
 
     @Inject
     private UserService userService;
@@ -57,6 +57,7 @@ public class AuthController {
                     .build();
         }
 
+       // Token erstellen & signieren
         String jwt = Jwts.builder()
                 .setSubject(dbUser.getUsername())
                 .claim("role", dbUser.getRole())

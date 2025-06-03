@@ -20,10 +20,9 @@ import java.util.Date;
 @Priority(Priorities.AUTHENTICATION)
 public class JWTAuthFilter implements ContainerRequestFilter {
 
-    // Achtung: Mindestens 256-bit (32-Byte) lang bei HS256!
-    private static final String SECRET_KEY = "mein-super-geheimer-key-1234567890123456";
+    private static final String JWT_SECRET = System.getProperty("jwt.secret.key");
+    private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(JWT_SECRET.getBytes());
 
-    private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -36,7 +35,7 @@ public class JWTAuthFilter implements ContainerRequestFilter {
         }
 
         // 2. Öffentliche Pfade erlauben (Whitelist)
-        if (path.equals("/auth/confirm") ||path.equals("/auth/login") || path.equals("") || path.equals("/hello") || path.equals("/auth/register")) {
+        if (path.equals("/auth/confirm") || path.equals("/auth/login") || path.equals("") || path.equals("/hello") || path.equals("/auth/register")) {
             return;
         }
 
@@ -51,7 +50,7 @@ public class JWTAuthFilter implements ContainerRequestFilter {
         String token = authHeader.substring("Bearer ".length());
 
         try {
-            // 4. Token prüfen Claims lesen
+            // 4. Token validieren/prüfen & parsen
             Jws<Claims> claimsJws = Jwts.parserBuilder()
                     .setSigningKey(SIGNING_KEY)
                     .build()
