@@ -1,8 +1,6 @@
 package at.rest.controller;
 
-import at.rest.model.Credentials;
-import at.rest.model.User;
-import at.rest.model.UserInfoResponse;
+import at.rest.model.*;
 import at.rest.servcie.MailService;
 import at.rest.servcie.UserService;
 import io.jsonwebtoken.Jwts;
@@ -18,8 +16,10 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Path("/auth")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -83,28 +83,31 @@ public class AuthController {
                     .build();
         }
 
+        // findByEmailAdresse auch machen
+
         String token = UUID.randomUUID().toString();
         user.setEmail(user.getEmail());
         user.setUsername(user.getUsername());
         user.setPassword(user.getPassword());
         user.setAge(user.getAge());
         user.setDateOfBirth(user.getDateOfBirth());
-        user.setRole("user"); // Default-Rolle
-        user.setPasswordHash(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt())); // ← wichtig!
+        user.setRole("user");
+        user.setPasswordHash(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         user.setConfirmed(false);
         user.setConfirmationToken(token);
 
-
         userService.save(user);
 
-        // Link erzeugen – Annahme: Dein Server läuft unter http://localhost:8080
-        String link = "http://localhost:8080/api/auth/confirm?token=" + token;
+        boolean emailSent = mailService.sendConfirmationEmail(user.getEmail(), token);
 
-        // E-Mail senden (Pseudo, musst du mit JavaMail oder Mail-Dienst umsetzen)
-        mailService.sendConfirmationEmail(user.getEmail(), link);
+        if (!emailSent) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(new MessageResponse("Registrierung erfolgreich, aber E-Mail konnte nicht gesendet werden."))
+                    .build();
+        }
 
         return Response.status(Response.Status.CREATED)
-                .entity("Registration successful. Please confirm your email address.")
+                .entity(new MessageResponse("Registration successful. Please confirm your email address."))
                 .build();
     }
 

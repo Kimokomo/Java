@@ -2,34 +2,62 @@ package at.rest.servcie;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.mail.*;
+import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 @ApplicationScoped
 public class MailService {
 
+    private static final Logger logger = Logger.getLogger(MailService.class.getName());
 
-    public void sendConfirmationEmail(String recipient, String confirmationLink) {
+    private Properties mailProps = new Properties();
 
-        Properties props = new Properties();
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("mail.properties")) {
-            props.load(input);
+    public MailService() {
+        String env = System.getProperty("app.env", "dev");
+        logger.info("ENV beim Start: " + env);
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("mail-" + env + ".properties")) {
+            if (input == null) {
+                throw new RuntimeException("Mail-Konfigurationsdatei mail-" + env + ".properties nicht gefunden.");
+            }
+            mailProps.load(input);
         } catch (IOException e) {
+            logger.warning("Fehler beim Laden der Mail-Konfiguration");
             throw new RuntimeException("Fehler beim Laden der Mail-Konfiguration", e);
         }
+    }
+
+    public boolean sendConfirmationEmail(String recipient, String token) {
+
+        // E-Mail-Syntax prüfen
+        try {
+            InternetAddress emailAddr = new InternetAddress(recipient);
+            emailAddr.validate();
+        } catch (AddressException ex) {
+            logger.warning("Ungültige E-Mail-Adresse: " + recipient);
+            return false;
+        }
+
+        String baseUrl = mailProps.getProperty("app.confirmation.url");
+        if (baseUrl == null) {
+            throw new RuntimeException("Property app.confirmation.url nicht gefunden!");
+        }
+
+        String confirmationLink = baseUrl + token;
 
         Properties sessionProps = new Properties();
         sessionProps.put("mail.smtp.auth", "true");
         sessionProps.put("mail.smtp.starttls.enable", "true");
-        sessionProps.put("mail.smtp.host", props.getProperty("mail.smtp.host"));
-        sessionProps.put("mail.smtp.port", props.getProperty("mail.smtp.port"));
+        sessionProps.put("mail.smtp.host", mailProps.getProperty("mail.smtp.host"));
+        sessionProps.put("mail.smtp.port", mailProps.getProperty("mail.smtp.port"));
 
-        String username = props.getProperty("mail.username");
-        String password = props.getProperty("mail.password");
+        String username = mailProps.getProperty("mail.username");
+        String password = mailProps.getProperty("mail.password");
 
         Session session = Session.getInstance(sessionProps, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -39,10 +67,7 @@ public class MailService {
         try {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(username));
-            message.setRecipients(
-                    Message.RecipientType.TO, InternetAddress.parse(recipient));
-            message.setRecipients(
-                    Message.RecipientType.TO, InternetAddress.parse(recipient));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
             message.setSubject("Willkommen bei SliceIt – Bitte bestätige deine Registrierung");
 
             String htmlContent = """
@@ -71,10 +96,11 @@ public class MailService {
             message.setContent(htmlContent, "text/html; charset=UTF-8");
 
             Transport.send(message);
-
             System.out.println("Bestätigungs-E-Mail gesendet an: " + recipient);
+            return true;
         } catch (MessagingException e) {
-            e.printStackTrace();
+            logger.severe("Fehler beim Senden der E-Mail: " + e.getMessage());
+            return false;
         }
     }
 }
