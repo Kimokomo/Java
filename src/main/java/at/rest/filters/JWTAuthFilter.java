@@ -100,15 +100,19 @@ public class JWTAuthFilter implements ContainerRequestFilter {
                 }
             });
 
-
-            // Pfad-Rollen-Prüfung
-            if (path.startsWith("admin") && !(role.equals("admin") || role.equals("superAdmin"))) {
+            if (path.contains("/member") && !(role.equals("admin") || role.equals("superadmin") || role.equals("user"))) {
                 abort(requestContext);
                 return;
             }
 
-            // Nur Benutzer mit Rolle "superAdmin" dürfen Pfade unter /superadmin aufrufen.
-            if (path.startsWith("superadmin") && !role.equals("superAdmin")) {
+            // Pfad-Rollen-Prüfung
+            if (path.startsWith("admin") && !(role.equals("admin") || role.equals("superadmin"))) {
+                abort(requestContext);
+                return;
+            }
+
+            // Nur Benutzer mit Rolle "superadmin" dürfen Pfade unter /superadmin aufrufen.
+            if (path.contains("/superadmin") && !role.equals("superadmin")) {
                 abort(requestContext);
                 return;
             }

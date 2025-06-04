@@ -133,7 +133,7 @@ public class AuthController {
     }
 
     @GET
-    @Path("/userinfo")
+    @Path("member/userinfo")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserInfo(@Context SecurityContext securityContext) {
 
@@ -144,7 +144,7 @@ public class AuthController {
         String username = securityContext.getUserPrincipal().getName();
 
         String role;
-        if (securityContext.isUserInRole("superAdmin")) {
+        if (securityContext.isUserInRole("superadmin")) {
             role = "superadmin";
         } else if (securityContext.isUserInRole("admin")) {
             role = "admin";

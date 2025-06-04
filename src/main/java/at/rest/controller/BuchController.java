@@ -10,7 +10,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
-@Path("/books")
+@Path("/books/superadmin")
 @Produces(MediaType.APPLICATION_JSON)
 public class BuchController {
 

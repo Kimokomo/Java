@@ -44,5 +44,5 @@ public class User {
     private String passwordHash;
 
     @Column(nullable = false)
-    private String role; // "user", "admin", "superAdmin" // besser enum
+    private String role; // "user", "admin", "superadmin" // besser enum
 }
