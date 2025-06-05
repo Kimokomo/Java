@@ -1,6 +1,11 @@
 package at.rest.controller;
 
-import at.rest.model.*;
+import at.rest.dtos.CredentialsDTO;
+import at.rest.dtos.RegisterUserDTO;
+import at.rest.mapper.UserMapper;
+import at.rest.model.User;
+import at.rest.responses.MessageResponse;
+import at.rest.responses.UserInfoResponse;
 import at.rest.servcie.MailService;
 import at.rest.servcie.UserService;
 import io.jsonwebtoken.Jwts;
@@ -15,11 +20,11 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.security.Key;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Date;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Path("/auth")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -35,11 +40,14 @@ public class AuthController {
     @Inject
     private MailService mailService;
 
+    @Inject
+    UserMapper userMapper;
+
     // --- LOGIN ---
     @POST
     @Path("/login")
-    public Response login(Credentials credentials) {
-        Optional<User> userOpt = userService.findByUsername(credentials.getUsername());
+    public Response login(CredentialsDTO credentialsDTO) {
+        Optional<User> userOpt = userService.findByUsername(credentialsDTO.getUsername());
 
         if (userOpt.isEmpty()) {
             return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
@@ -47,7 +55,7 @@ public class AuthController {
 
         User dbUser = userOpt.get();
 
-        if (!userService.checkPassword(credentials.getPassword(), dbUser.getPasswordHash())) {
+        if (!userService.checkPassword(credentialsDTO.getPassword(), dbUser.getPasswordHash())) {
             return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
         }
 
@@ -57,7 +65,7 @@ public class AuthController {
                     .build();
         }
 
-       // Token erstellen & signieren
+        // Token erstellen & signieren
         String jwt = Jwts.builder()
                 .setSubject(dbUser.getUsername())
                 .claim("role", dbUser.getRole())
@@ -73,18 +81,61 @@ public class AuthController {
     // --- REGISTER ---
     @POST
     @Path("/register")
-    public Response register(User user) {
+    public Response register(RegisterUserDTO dto) {
 
         // DTO in Entity umwandeln
-        // User user = UserMapper.INSTANCE.toEntity(dto);
+        User user = userMapper.toEntity(dto);
 
         if (userService.findByUsername(user.getUsername()).isPresent()) {
             return Response.status(Response.Status.CONFLICT)
-                    .entity("Username already exists")
+                    .entity(new MessageResponse("username already exists"))
                     .build();
         }
 
-        // findByEmailAdresse auch machen
+        if (userService.findByEmail(user.getEmail()).isPresent()) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(new MessageResponse("email already exists"))
+                    .build();
+        }
+
+        if (!userService.isPasswordValid(user.getPassword())) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new MessageResponse("Passwort zu schwach – mindestens 8 Zeichen, ein Großbuchstabe, ein Kleinbuchstabe und eine Zahl erforderlich."))
+                    .build();
+        }
+
+        if (user.getFirstname() == null || user.getFirstname().trim().length() < 2) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new MessageResponse("Vorname muss mindestens 2 Zeichen lang sein."))
+                    .build();
+        }
+
+        if (user.getLastname() == null || user.getLastname().trim().length() < 2) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new MessageResponse("Nachname muss mindestens 2 Zeichen lang sein."))
+                    .build();
+        }
+
+        if (user.getAge() == null || user.getAge() < 18) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new MessageResponse("Alter muss mindestens 18 Jahre betragen."))
+                    .build();
+        }
+
+        if (user.getDateOfBirth() == null || user.getDateOfBirth().isAfter(LocalDate.now())) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new MessageResponse("Geburtsdatum darf nicht leer sein oder in der Zukunft liegen."))
+                    .build();
+        }
+
+        // Altersangabe und Geburtsdatum abgleichen (Konsistenzprüfung)
+        int calculatedAge = Period.between(user.getDateOfBirth(), LocalDate.now()).getYears();
+        if (calculatedAge != user.getAge()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new MessageResponse("Alter stimmt nicht mit dem Geburtsdatum überein."))
+                    .build();
+        }
+
 
         String token = UUID.randomUUID().toString();
         user.setEmail(user.getEmail());

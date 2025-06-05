@@ -18,6 +18,10 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
     public Optional<User> findByConfirmationToken(String token) {
         return userRepository.findByConfirmationToken(token);
     }
@@ -32,6 +36,20 @@ public class UserService {
 
     public boolean checkPassword(String rawPassword, String passwordHash) {
         return BCrypt.checkpw(rawPassword, passwordHash);
+    }
+
+    public boolean isPasswordValid(String password) {
+        if (password == null) return false;
+
+        // Mindestlänge 8 Zeichen
+        if (password.length() < 8) return false;
+
+        // Muss mindestens einen Großbuchstaben, Kleinbuchstaben und Zahl enthalten
+        boolean hasUpper = password.matches(".*[A-Z].*");
+        boolean hasLower = password.matches(".*[a-z].*");
+        boolean hasDigit = password.matches(".*\\d.*");
+
+        return hasUpper && hasLower && hasDigit;
     }
 
 
