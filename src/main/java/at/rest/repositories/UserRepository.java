@@ -32,6 +32,12 @@ public class UserRepository {
         return query.getResultStream().findFirst();
     }
 
+    public Optional<User> findByGoogleId(String googleId) {
+        var query = em.createQuery("SELECT u FROM User u WHERE u.googleId = :googleId", User.class);
+        query.setParameter("googleId", googleId);
+        return query.getResultStream().findFirst();
+    }
+
     @Transactional
     public void save(User user) {
         if (user.getId() == null) {

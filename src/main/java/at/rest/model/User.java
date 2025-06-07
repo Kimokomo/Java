@@ -20,11 +20,14 @@ public class User {
     @SequenceGenerator(name = "user_seq", sequenceName = "user_sequence", allocationSize = 1)
     private Long id;
 
+    @Column(name = "google_id", unique = true)
+    private String googleId;
 
     private String firstname;
     private String lastname;
     private Integer age;
     private boolean confirmed;
+
     @Column(name = "confirmation_token")
     private String confirmationToken;
 

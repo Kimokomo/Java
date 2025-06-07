@@ -52,16 +52,32 @@ public class UserService {
         return hasUpper && hasLower && hasDigit;
     }
 
+    public User findOrCreateUser(String email, String googleId, String name) {
+        // Suche User anhand Google-ID
+        Optional<User> userOpt = userRepository.findByGoogleId(googleId);
 
-    public User registerUser(String username, String passwordInput, String role, String email) {
-        String hashed = BCrypt.hashpw(passwordInput, BCrypt.gensalt());
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(passwordInput);
-        user.setPasswordHash(hashed);
-        user.setRole(role);
-        user.setEmail(email);
-        userRepository.save(user);
-        return user;
+        if (userOpt.isPresent()) {
+            return userOpt.get();
+        }
+
+        // Falls nicht gefunden, versuche User anhand Email
+        userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            return userOpt.get();
+        }
+
+        // Wenn User noch nicht existiert, neu anlegen
+        User newUser = new User();
+        newUser.setEmail(email);
+        newUser.setGoogleId(googleId);
+        newUser.setUsername(email);  // username ist dann email
+        newUser.setRole("user");
+        newUser.setConfirmed(true);  // Google-User sind automatisch bestätigt
+        newUser.setPasswordHash("GOOGLE_LOGIN_HASH");
+        newUser.setPassword("GOOGLE_LOGIN");
+
+        userRepository.save(newUser);
+
+        return newUser;
     }
 }

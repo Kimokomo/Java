@@ -10,6 +10,6 @@ public class HelloController {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
-        return "Hello from WildFly REST APIIIII!";
+        return "Hello from WildFly REST API!";
     }
 }

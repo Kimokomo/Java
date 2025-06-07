@@ -35,7 +35,8 @@ public class JWTAuthFilter implements ContainerRequestFilter {
         }
 
         // 2. Öffentliche Pfade erlauben (Whitelist)
-        if (path.equals("/auth/confirm") || path.equals("/auth/login") || path.equals("") || path.equals("/hello") || path.equals("/auth/register")) {
+        if (path.equals("/auth/confirm") || path.equals("/auth/login") || path.equals("") ||
+                path.equals("/hello") || path.equals("/auth/register") || path.equals("/auth/google")) {
             return;
         }
 
