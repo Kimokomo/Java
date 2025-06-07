@@ -32,16 +32,9 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
 
     public Optional<User> findByConfirmationToken(String token) {
         return userRepository.findByConfirmationToken(token);
-    }
-
-    public void save(User user) {
-        userRepository.save(user);  // nutzt persist oder merge je nach Zustand
     }
 
     public void update(User user) {
