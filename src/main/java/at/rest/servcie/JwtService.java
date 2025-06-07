@@ -1,8 +1,7 @@
 package at.rest.servcie;
 
 import at.rest.model.User;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -12,11 +11,11 @@ import java.util.Date;
 @ApplicationScoped
 public class JwtService {
 
-    private static final String JWT_SECRET = System.getProperty("jwt.secret.key");
-    private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(JWT_SECRET.getBytes());
-
     // Token Gültigkeit: 1 Stunde
     private static final long EXPIRATION_TIME_MS = 3600_000L;
+
+    private static final String JWT_SECRET = System.getProperty("jwt.secret.key");
+    private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(JWT_SECRET.getBytes());
 
     public String createJwtForUser(User user) {
         return Jwts.builder()
@@ -26,4 +25,22 @@ public class JwtService {
                 .signWith(SIGNING_KEY, SignatureAlgorithm.HS256)
                 .compact();
     }
+
+    public Claims parseAndValidateToken(String token) throws JwtException {
+        Jws<Claims> claimsJws = Jwts.parserBuilder()
+                .setSigningKey(SIGNING_KEY)
+                .build()
+                .parseClaimsJws(token);
+
+        Claims claims = claimsJws.getBody();
+
+        // Ablauf prüfen (optional, weil jwt das auch automatisch macht)
+        Date expiration = claims.getExpiration();
+        if (expiration == null || expiration.before(new Date())) {
+            throw new JwtException("Token expired");
+        }
+
+        return claims;
+    }
+
 }

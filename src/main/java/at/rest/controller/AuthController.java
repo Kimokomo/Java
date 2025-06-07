@@ -15,9 +15,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -25,9 +22,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
-import java.security.Key;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Optional;
 
 @Path("/auth")
@@ -35,8 +30,6 @@ import java.util.Optional;
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthController {
 
-    private static final String JWT_SECRET = System.getProperty("jwt.secret.key");
-    private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(JWT_SECRET.getBytes());
 
     private static final String GOOGLE_CLIENT_ID = System.getProperty("google.client.id");
 
@@ -69,12 +62,7 @@ public class AuthController {
         }
 
         // Token erstellen & signieren
-        String jwt = Jwts.builder()
-                .setSubject(dbUser.getUsername())
-                .claim("role", dbUser.getRole())
-                .setExpiration(new Date(System.currentTimeMillis() + 3600_000)) // 1h Gültigkeit
-                .signWith(SIGNING_KEY, SignatureAlgorithm.HS256)
-                .compact();
+        String jwt = jwtService.createJwtForUser(dbUser);
 
         return Response.ok()
                 .entity("{\"token\":\"" + jwt + "\"}")
