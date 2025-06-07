@@ -3,6 +3,8 @@ package at.rest.dtos;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 public class RegisterUserDTO {
@@ -12,5 +14,5 @@ public class RegisterUserDTO {
     private String firstname;
     private String lastname;
     private Integer age;
-    private String dateOfBirth;
+    private LocalDate dateOfBirth;
 }

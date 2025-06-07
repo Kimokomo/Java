@@ -1,6 +1,7 @@
 package at.rest.servcie;
 
 import at.rest.dtos.RegisterUserDTO;
+import at.rest.exceptions.DuplicateException;
 import at.rest.mapper.UserMapper;
 import at.rest.model.User;
 import at.rest.repositories.UserRepository;
@@ -51,19 +52,7 @@ public class UserService {
         return BCrypt.checkpw(rawPassword, passwordHash);
     }
 
-    public boolean isPasswordValid(String password) {
-        if (password == null) return false;
 
-        // Mindestlänge 8 Zeichen
-        if (password.length() < 8) return false;
-
-        // Muss mindestens einen Großbuchstaben, Kleinbuchstaben und Zahl enthalten
-        boolean hasUpper = password.matches(".*[A-Z].*");
-        boolean hasLower = password.matches(".*[a-z].*");
-        boolean hasDigit = password.matches(".*\\d.*");
-
-        return hasUpper && hasLower && hasDigit;
-    }
 
     public User findOrCreateUser(String email, String googleId, String name) {
         // Suche User anhand Google-ID
@@ -95,29 +84,24 @@ public class UserService {
     }
 
     public User registerNewUser(RegisterUserDTO dto) {
+
         // Validierung zentral über Validator
         userValidator.validate(dto);
+        checkDuplicateUser(dto);
 
         // DTO in User umwandeln
         User user = userMapper.toEntity(dto);
-
-        user.setEmail(user.getEmail());
-        user.setUsername(user.getUsername());
-        user.setAge(user.getAge());
-        user.setDateOfBirth(user.getDateOfBirth());
 
         // Passwort hashen und setzen
         String hashedPassword = BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt());
         user.setPasswordHash(hashedPassword);
         user.setPassword(null); // nicht speichern!!
 
-        // Rolle setzen
-        user.setRole("user");
-
-        // Bestätigungstoken erzeugen
+        // Rolle, Token, Bestätigung setzen
         String token = UUID.randomUUID().toString();
         user.setConfirmed(false);
         user.setConfirmationToken(token);
+        user.setRole("user");
 
         // Speichern
         userRepository.save(user);
@@ -127,4 +111,14 @@ public class UserService {
 
         return user;
     }
+
+    public void checkDuplicateUser(RegisterUserDTO dto) {
+        if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
+            throw new DuplicateException("username already exists");
+        }
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new DuplicateException("email already exists");
+        }
+    }
+
 }

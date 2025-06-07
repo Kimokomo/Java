@@ -4,14 +4,12 @@ import at.rest.dtos.CredentialsDTO;
 import at.rest.dtos.RegisterUserDTO;
 import at.rest.exceptions.DuplicateException;
 import at.rest.exceptions.ValidationException;
-import at.rest.mapper.UserMapper;
 import at.rest.model.User;
 import at.rest.requests.GoogleTokenRequest;
 import at.rest.responses.JwtResponse;
 import at.rest.responses.MessageResponse;
 import at.rest.responses.UserInfoResponse;
 import at.rest.servcie.JwtService;
-import at.rest.servcie.MailService;
 import at.rest.servcie.UserService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -26,15 +24,11 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.security.Key;
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 
 @Path("/auth")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -139,12 +133,8 @@ public class AuthController {
             return Response.status(Response.Status.CREATED)
                     .entity(new MessageResponse("Registration successful. Please confirm your email address."))
                     .build();
-        } catch (ValidationException e) {
+        } catch (ValidationException | DuplicateException e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new MessageResponse(e.getMessage()))
-                    .build();
-        } catch (DuplicateException e) {
-            return Response.status(Response.Status.UNAUTHORIZED)
                     .entity(new MessageResponse(e.getMessage()))
                     .build();
         } catch (Exception e) {
