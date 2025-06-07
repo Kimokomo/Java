@@ -1,18 +1,31 @@
 package at.rest.servcie;
 
+import at.rest.dtos.RegisterUserDTO;
+import at.rest.mapper.UserMapper;
 import at.rest.model.User;
 import at.rest.repositories.UserRepository;
+import at.rest.validators.UserValidator;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @ApplicationScoped
 public class UserService {
 
     @Inject
     private UserRepository userRepository;
+
+    @Inject
+    private UserValidator userValidator;
+
+    @Inject
+    private UserMapper userMapper;
+
+    @Inject
+    MailService mailService;
 
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
@@ -79,5 +92,39 @@ public class UserService {
         userRepository.save(newUser);
 
         return newUser;
+    }
+
+    public User registerNewUser(RegisterUserDTO dto) {
+        // Validierung zentral über Validator
+        userValidator.validate(dto);
+
+        // DTO in User umwandeln
+        User user = userMapper.toEntity(dto);
+
+        user.setEmail(user.getEmail());
+        user.setUsername(user.getUsername());
+        user.setAge(user.getAge());
+        user.setDateOfBirth(user.getDateOfBirth());
+
+        // Passwort hashen und setzen
+        String hashedPassword = BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt());
+        user.setPasswordHash(hashedPassword);
+        user.setPassword(null); // nicht speichern!!
+
+        // Rolle setzen
+        user.setRole("user");
+
+        // Bestätigungstoken erzeugen
+        String token = UUID.randomUUID().toString();
+        user.setConfirmed(false);
+        user.setConfirmationToken(token);
+
+        // Speichern
+        userRepository.save(user);
+
+        // Bestätigungsmail senden
+        mailService.sendConfirmationEmail(user.getEmail(), token);
+
+        return user;
     }
 }

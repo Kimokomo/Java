@@ -2,6 +2,8 @@ package at.rest.controller;
 
 import at.rest.dtos.CredentialsDTO;
 import at.rest.dtos.RegisterUserDTO;
+import at.rest.exceptions.DuplicateException;
+import at.rest.exceptions.ValidationException;
 import at.rest.mapper.UserMapper;
 import at.rest.model.User;
 import at.rest.requests.GoogleTokenRequest;
@@ -48,13 +50,7 @@ public class AuthController {
     private UserService userService;
 
     @Inject
-    private MailService mailService;
-
-    @Inject
     private JwtService jwtService;
-
-    @Inject
-    UserMapper userMapper;
 
     // --- LOGIN --- //
     @POST
@@ -104,7 +100,7 @@ public class AuthController {
         }
 
         String email = payload.getEmail();
-        String googleId = payload.getSubject(); // "sub"
+        String googleId = payload.getSubject();
         String name = (String) payload.get("name");
 
         // 2. Nutzer suchen oder neu anlegen
@@ -137,84 +133,25 @@ public class AuthController {
     @Path("/register")
     public Response register(RegisterUserDTO dto) {
 
-        // DTO in Entity umwandeln
-        User user = userMapper.toEntity(dto);
+        try {
+            userService.registerNewUser(dto);
 
-        if (userService.findByUsername(user.getUsername()).isPresent()) {
-            return Response.status(Response.Status.CONFLICT)
-                    .entity(new MessageResponse("username already exists"))
+            return Response.status(Response.Status.CREATED)
+                    .entity(new MessageResponse("Registration successful. Please confirm your email address."))
                     .build();
-        }
-
-        if (userService.findByEmail(user.getEmail()).isPresent()) {
-            return Response.status(Response.Status.CONFLICT)
-                    .entity(new MessageResponse("email already exists"))
-                    .build();
-        }
-
-        if (!userService.isPasswordValid(user.getPassword())) {
+        } catch (ValidationException e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new MessageResponse("Passwort zu schwach – mindestens 8 Zeichen, ein Großbuchstabe, ein Kleinbuchstabe und eine Zahl erforderlich."))
+                    .entity(new MessageResponse(e.getMessage()))
                     .build();
-        }
-
-        if (user.getFirstname() == null || user.getFirstname().trim().length() < 2) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new MessageResponse("Vorname muss mindestens 2 Zeichen lang sein."))
+        } catch (DuplicateException e) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(new MessageResponse(e.getMessage()))
                     .build();
-        }
-
-        if (user.getLastname() == null || user.getLastname().trim().length() < 2) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new MessageResponse("Nachname muss mindestens 2 Zeichen lang sein."))
-                    .build();
-        }
-
-        if (user.getAge() == null || user.getAge() < 18) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new MessageResponse("Alter muss mindestens 18 Jahre betragen."))
-                    .build();
-        }
-
-        if (user.getDateOfBirth() == null || user.getDateOfBirth().isAfter(LocalDate.now())) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new MessageResponse("Geburtsdatum darf nicht leer sein oder in der Zukunft liegen."))
-                    .build();
-        }
-
-        // Altersangabe und Geburtsdatum abgleichen (Konsistenzprüfung)
-        int calculatedAge = Period.between(user.getDateOfBirth(), LocalDate.now()).getYears();
-        if (calculatedAge != user.getAge()) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new MessageResponse("Alter stimmt nicht mit dem Geburtsdatum überein."))
-                    .build();
-        }
-
-
-        String token = UUID.randomUUID().toString();
-        user.setEmail(user.getEmail());
-        user.setUsername(user.getUsername());
-        user.setPassword(user.getPassword());
-        user.setAge(user.getAge());
-        user.setDateOfBirth(user.getDateOfBirth());
-        user.setRole("user");
-        user.setPasswordHash(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
-        user.setConfirmed(false);
-        user.setConfirmationToken(token);
-
-        userService.save(user);
-
-        boolean emailSent = mailService.sendConfirmationEmail(user.getEmail(), token);
-
-        if (!emailSent) {
+        } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new MessageResponse("Registrierung erfolgreich, aber E-Mail konnte nicht gesendet werden."))
+                    .entity(new MessageResponse("An error occurred during registration"))
                     .build();
         }
-
-        return Response.status(Response.Status.CREATED)
-                .entity(new MessageResponse("Registration successful. Please confirm your email address."))
-                .build();
     }
 
     // --- EMAIL BESTÄTIGUNG //
