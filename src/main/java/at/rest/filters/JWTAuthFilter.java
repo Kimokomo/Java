@@ -1,6 +1,6 @@
 package at.rest.filters;
 
-import at.rest.factory.SecurityContextFactory;
+import at.rest.factories.SecurityContextFactory;
 import at.rest.servcie.AccessControlService;
 import at.rest.servcie.JwtService;
 import io.jsonwebtoken.Claims;

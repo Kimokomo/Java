@@ -1,14 +1,8 @@
 package at.rest.validators;
 
 import at.rest.dtos.RegisterUserDTO;
-import at.rest.exceptions.DuplicateException;
 import at.rest.exceptions.ValidationException;
-import at.rest.mapper.UserMapper;
-import at.rest.model.User;
-import at.rest.repositories.UserRepository;
-import at.rest.servcie.UserService;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import java.time.LocalDate;
 import java.time.Period;

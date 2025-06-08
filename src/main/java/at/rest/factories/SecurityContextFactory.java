@@ -1,4 +1,4 @@
-package at.rest.factory;
+package at.rest.factories;
 
 import jakarta.ws.rs.core.SecurityContext;
 
