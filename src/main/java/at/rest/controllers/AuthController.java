@@ -94,6 +94,7 @@ public class AuthController {
         }
     }
 
+    // --- GET USERINFO FROM SECURITY CONTEXT //
     @GET
     @Path("member/userinfo")
     @Produces(MediaType.APPLICATION_JSON)
