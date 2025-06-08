@@ -42,7 +42,8 @@ build/
 
 src/main/resources/mail-dev.properties
 src/main/resources/mail-prod.properties
-src/main/resources/jwt.properties
+src/main/resources/cors-dev.properties
+src/main/resources/cors-prod.properties
 
 
 
