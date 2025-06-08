@@ -5,25 +5,17 @@ import at.rest.dtos.RegisterUserDTO;
 import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
 import at.rest.exceptions.ValidationException;
-import at.rest.model.User;
 import at.rest.requests.GoogleTokenRequest;
 import at.rest.responses.JwtResponse;
 import at.rest.responses.MessageResponse;
 import at.rest.responses.UserInfoResponse;
-import at.rest.servcie.JwtService;
 import at.rest.servcie.UserService;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-
-import java.util.Collections;
 
 @Path("/auth")
 @Consumes(MediaType.APPLICATION_JSON)
