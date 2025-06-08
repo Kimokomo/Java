@@ -1,8 +1,8 @@
 package at.rest.filters;
 
 import at.rest.factories.SecurityContextFactory;
-import at.rest.servcie.AccessControlService;
-import at.rest.servcie.JwtService;
+import at.rest.services.AccessControlService;
+import at.rest.services.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.Priority;

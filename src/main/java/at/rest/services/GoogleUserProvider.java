@@ -1,7 +1,7 @@
-package at.rest.servcie;
+package at.rest.services;
 
 import at.rest.factories.UserFactory;
-import at.rest.model.User;
+import at.rest.models.User;
 import at.rest.repositories.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

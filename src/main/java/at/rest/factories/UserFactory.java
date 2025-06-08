@@ -1,6 +1,6 @@
 package at.rest.factories;
 
-import at.rest.model.User;
+import at.rest.models.User;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped

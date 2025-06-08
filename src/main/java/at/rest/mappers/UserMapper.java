@@ -1,8 +1,8 @@
-package at.rest.mapper;
+package at.rest.mappers;
 
 
 import at.rest.dtos.RegisterUserDTO;
-import at.rest.model.User;
+import at.rest.models.User;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "cdi")

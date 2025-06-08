@@ -1,6 +1,6 @@
 package at.rest.repositories;
 
-import at.rest.model.User;
+import at.rest.models.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

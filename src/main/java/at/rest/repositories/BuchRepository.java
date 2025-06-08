@@ -1,6 +1,6 @@
 package at.rest.repositories;
 
-import at.rest.model.Buch;
+import at.rest.models.Buch;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;

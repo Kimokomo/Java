@@ -1,8 +1,8 @@
-package at.rest.servcie;
+package at.rest.services;
 
 
 import at.rest.exceptions.AuthenticationException;
-import at.rest.model.User;
+import at.rest.models.User;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

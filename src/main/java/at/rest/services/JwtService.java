@@ -1,6 +1,6 @@
-package at.rest.servcie;
+package at.rest.services;
 
-import at.rest.model.User;
+import at.rest.models.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.enterprise.context.ApplicationScoped;

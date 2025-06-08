@@ -1,4 +1,4 @@
-package at.rest.servcie;
+package at.rest.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
