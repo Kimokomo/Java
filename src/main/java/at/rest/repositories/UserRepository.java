@@ -53,4 +53,13 @@ public class UserRepository {
         }
         em.merge(user);
     }
+
+    @Transactional
+    public void saveOrUpdate(User user) {
+        if (user.getId() == null) {
+            em.persist(user);
+        } else {
+            em.merge(user);
+        }
+    }
 }

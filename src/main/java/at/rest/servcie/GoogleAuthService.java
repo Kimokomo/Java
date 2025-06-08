@@ -71,9 +71,9 @@ public class GoogleAuthService {
         newUser.setRole("user");
         newUser.setConfirmed(true);
         newUser.setPasswordHash("GOOGLE_LOGIN_HASH");
-        newUser.setPassword("GOOGLE_LOGIN");
+        newUser.setPassword(null);
 
-        userRepository.saveNew(newUser);
+        userRepository.saveOrUpdate(newUser);
 
         return newUser;
     }

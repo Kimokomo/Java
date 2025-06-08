@@ -56,7 +56,6 @@ public class UserService {
         return BCrypt.checkpw(rawPassword, passwordHash);
     }
 
-
     public User registerNewUser(RegisterUserDTO dto) {
 
         // Validierung zentral über Validator
