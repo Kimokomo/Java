@@ -5,10 +5,12 @@ import at.rest.dtos.RegisterUserDTO;
 import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
 import at.rest.exceptions.ValidationException;
+import at.rest.model.User;
 import at.rest.requests.GoogleTokenRequest;
 import at.rest.responses.JwtResponse;
 import at.rest.responses.MessageResponse;
 import at.rest.responses.UserInfoResponse;
+import at.rest.servcie.GoogleAuthService;
 import at.rest.servcie.UserService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -24,6 +26,9 @@ public class AuthController {
 
     @Inject
     private UserService userService;
+
+    @Inject
+    GoogleAuthService googleAuthService;
 
     // --- LOGIN --- //
     @POST
@@ -44,7 +49,7 @@ public class AuthController {
     @Path("/google")
     public Response loginWithGoogle(GoogleTokenRequest request) {
         try {
-            String jwt = userService.loginWithGoogleToken(request.getIdToken());
+            String jwt = googleAuthService.loginWithGoogleToken(request.getIdToken());
             return Response.ok(new JwtResponse(jwt)).build();
         } catch (AuthenticationException e) {
             return Response.status(Response.Status.UNAUTHORIZED)
@@ -61,7 +66,7 @@ public class AuthController {
     public Response register(RegisterUserDTO dto) {
 
         try {
-            userService.registerNewUser(dto);
+            User user = userService.registerNewUser(dto);
             return Response.status(Response.Status.CREATED)
                     .entity(new MessageResponse("Registration successful. Please confirm your email address."))
                     .build();
