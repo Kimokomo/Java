@@ -64,7 +64,6 @@ public class AuthController {
     @POST
     @Path("/register")
     public Response register(RegisterUserDTO dto) {
-
         try {
             User user = userService.registerNewUser(dto);
             return Response.status(Response.Status.CREATED)
@@ -99,26 +98,11 @@ public class AuthController {
     @Path("member/userinfo")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserInfo(@Context SecurityContext securityContext) {
-
-        if (securityContext == null || securityContext.getUserPrincipal() == null) {
+        try {
+            UserInfoResponse userInfo = userService.getUserInfo(securityContext);
+            return Response.ok(userInfo).build();
+        } catch (AuthenticationException e) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
-
-        String username = securityContext.getUserPrincipal().getName();
-
-        String role;
-        if (securityContext.isUserInRole("superadmin")) {
-            role = "superadmin";
-        } else if (securityContext.isUserInRole("admin")) {
-            role = "admin";
-        } else if (securityContext.isUserInRole("user")) {
-            role = "user";
-        } else {
-            role = "unknown";
-        }
-
-        UserInfoResponse userInfo = new UserInfoResponse(username, role);
-
-        return Response.ok(userInfo).build();
     }
 }

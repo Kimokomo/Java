@@ -6,9 +6,11 @@ import at.rest.exceptions.DuplicateException;
 import at.rest.mappers.UserMapper;
 import at.rest.models.User;
 import at.rest.repositories.UserRepository;
+import at.rest.responses.UserInfoResponse;
 import at.rest.validators.UserValidator;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.SecurityContext;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Optional;
@@ -31,6 +33,25 @@ public class UserService {
 
     @Inject
     JwtService jwtService;
+
+    public UserInfoResponse getUserInfo(SecurityContext securityContext) {
+        if (securityContext == null || securityContext.getUserPrincipal() == null) {
+            throw new AuthenticationException("Not authenticated");
+        }
+
+        String username = securityContext.getUserPrincipal().getName();
+        String role = resolveRole(securityContext);
+
+        return new UserInfoResponse(username, role);
+    }
+
+    private String resolveRole(SecurityContext securityContext) {
+        if (securityContext.isUserInRole("superadmin")) return "superadmin";
+        if (securityContext.isUserInRole("admin")) return "admin";
+        if (securityContext.isUserInRole("user")) return "user";
+        return "unknown";
+    }
+
 
     public String login(String username, String password) {
         Optional<User> userOpt = userRepository.findByUsername(username);
