@@ -2,6 +2,7 @@ package at.rest.controller;
 
 import at.rest.dtos.CredentialsDTO;
 import at.rest.dtos.RegisterUserDTO;
+import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
 import at.rest.exceptions.ValidationException;
 import at.rest.model.User;
@@ -30,7 +31,6 @@ import java.util.Optional;
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthController {
 
-
     private static final String GOOGLE_CLIENT_ID = System.getProperty("google.client.id");
 
     @Inject
@@ -43,30 +43,14 @@ public class AuthController {
     @POST
     @Path("/login")
     public Response login(CredentialsDTO credentialsDTO) {
-        Optional<User> userOpt = userService.findByUsername(credentialsDTO.getUsername());
-
-        if (userOpt.isEmpty()) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
+        try {
+            String jwt = userService.login(credentialsDTO.getUsername(), credentialsDTO.getPassword());
+            return Response.ok(new JwtResponse(jwt)).build();
+        } catch (AuthenticationException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
+        } catch (IllegalStateException e) {
+            return Response.status(Response.Status.FORBIDDEN).entity(e.getMessage()).build();
         }
-
-        User dbUser = userOpt.get();
-
-        if (!userService.checkPassword(credentialsDTO.getPassword(), dbUser.getPasswordHash())) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
-        }
-
-        if (!dbUser.isConfirmed()) {
-            return Response.status(Response.Status.FORBIDDEN)
-                    .entity("Please confirm your email before logging in.")
-                    .build();
-        }
-
-        // Token erstellen & signieren
-        String jwt = jwtService.createJwtForUser(dbUser);
-
-        return Response.ok()
-                .entity("{\"token\":\"" + jwt + "\"}")
-                .build();
     }
 
     // --- LOGIN WITH GOOGLE --- //
@@ -136,20 +120,14 @@ public class AuthController {
     @GET
     @Path("/confirm")
     public Response confirmEmail(@QueryParam("token") String token) {
-        Optional<User> userOpt = userService.findByConfirmationToken(token);
-
-        if (userOpt.isEmpty()) {
+        try {
+            userService.confirmEmail(token);
+            return Response.ok(new MessageResponse("Email confirmed. You can now log in.")).build();
+        } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Invalid or expired confirmation token.")
+                    .entity(new MessageResponse(e.getMessage()))
                     .build();
         }
-
-        User user = userOpt.get();
-        user.setConfirmed(true);
-        user.setConfirmationToken(null);
-        userService.update(user);
-
-        return Response.ok("Email confirmed. You can now log in.").build();
     }
 
     @GET

@@ -1,6 +1,7 @@
 package at.rest.servcie;
 
 import at.rest.dtos.RegisterUserDTO;
+import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
 import at.rest.mapper.UserMapper;
 import at.rest.model.User;
@@ -28,24 +29,8 @@ public class UserService {
     @Inject
     MailService mailService;
 
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-
-    public Optional<User> findByConfirmationToken(String token) {
-        return userRepository.findByConfirmationToken(token);
-    }
-
-    public void update(User user) {
-        userRepository.save(user);  // gleiche Methode, da save() beides abdeckt
-    }
-
-    public boolean checkPassword(String rawPassword, String passwordHash) {
-        return BCrypt.checkpw(rawPassword, passwordHash);
-    }
-
-
+    @Inject
+    JwtService jwtService;
 
     public User findOrCreateUser(String email, String googleId, String name) {
         // Suche User anhand Google-ID
@@ -71,10 +56,35 @@ public class UserService {
         newUser.setPasswordHash("GOOGLE_LOGIN_HASH");
         newUser.setPassword("GOOGLE_LOGIN");
 
-        userRepository.save(newUser);
+        userRepository.saveNew(newUser);
 
         return newUser;
     }
+
+    public String login(String username, String password) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+
+        if (userOpt.isEmpty()) {
+            throw new AuthenticationException("username existiret nicht");
+        }
+
+        User user = userOpt.get();
+
+        if (!checkPassword(password, user.getPasswordHash())) {
+            throw new AuthenticationException("Passwort ungültig");
+        }
+
+        if (!user.isConfirmed()) {
+            throw new IllegalStateException("Please confirm your email before logging in.");
+        }
+
+        return jwtService.createJwtForUser(user);
+    }
+
+    public boolean checkPassword(String rawPassword, String passwordHash) {
+        return BCrypt.checkpw(rawPassword, passwordHash);
+    }
+
 
     public User registerNewUser(RegisterUserDTO dto) {
 
@@ -97,7 +107,7 @@ public class UserService {
         user.setRole("user");
 
         // Speichern
-        userRepository.save(user);
+        userRepository.saveNew(user);
 
         // Bestätigungsmail senden
         mailService.sendConfirmationEmail(user.getEmail(), token);
@@ -114,4 +124,16 @@ public class UserService {
         }
     }
 
+    public void confirmEmail(String token) {
+        Optional<User> userOpt = userRepository.findByConfirmationToken(token);
+
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("Invalid or expired confirmation token.");
+        }
+
+        User user = userOpt.get();
+        user.setConfirmed(true);
+        user.setConfirmationToken(null);
+        userRepository.update(user);
+    }
 }

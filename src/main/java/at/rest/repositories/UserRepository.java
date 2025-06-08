@@ -39,11 +39,18 @@ public class UserRepository {
     }
 
     @Transactional
-    public void save(User user) {
-        if (user.getId() == null) {
-            em.persist(user);
-        } else {
-            em.merge(user);
+    public void saveNew(User user) {
+        if (user.getId() != null) {
+            throw new IllegalArgumentException("New user must not have an ID.");
         }
+        em.persist(user);
+    }
+
+    @Transactional
+    public void update(User user) {
+        if (user.getId() == null) {
+            throw new IllegalArgumentException("Cannot update user without ID.");
+        }
+        em.merge(user);
     }
 }
