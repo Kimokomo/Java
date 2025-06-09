@@ -4,6 +4,7 @@ import at.rest.dtos.RegisterUserDTO;
 import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
 import at.rest.mappers.UserMapper;
+import at.rest.models.CustomSecurityContext;
 import at.rest.models.User;
 import at.rest.repositories.UserRepository;
 import at.rest.responses.UserInfoResponse;
@@ -13,6 +14,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.SecurityContext;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,7 +44,13 @@ public class UserService {
         String username = securityContext.getUserPrincipal().getName();
         String role = resolveRole(securityContext);
 
-        return new UserInfoResponse(username, role);
+        Date tokenExpiration = null;
+
+        if (securityContext instanceof CustomSecurityContext customCtx) {
+            tokenExpiration = customCtx.getTokenExpiration();
+        }
+
+        return new UserInfoResponse(username, role, tokenExpiration);
     }
 
     private String resolveRole(SecurityContext securityContext) {

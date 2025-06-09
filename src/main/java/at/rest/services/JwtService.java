@@ -11,8 +11,8 @@ import java.util.Date;
 @ApplicationScoped
 public class JwtService {
 
-    // Token Gültigkeit: 1 Stunde
-    private static final long EXPIRATION_TIME_MS = 3600_000L;
+    // Token Gültigkeit: 15 min
+    private static final long EXPIRATION_TIME_MS = 15 * 60 * 1000L;
 
     private static final String JWT_SECRET = System.getProperty("jwt.secret.key");
     private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(JWT_SECRET.getBytes());

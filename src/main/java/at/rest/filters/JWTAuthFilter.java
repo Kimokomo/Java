@@ -14,6 +14,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,6 +60,7 @@ public class JWTAuthFilter implements ContainerRequestFilter {
 
             String username = claims.getSubject();
             String role = claims.get("role", String.class);
+            Date expiration = claims.getExpiration();
 
             if (username == null || role == null) {
                 logger.warning("JWT token missing required claims");
@@ -68,7 +70,7 @@ public class JWTAuthFilter implements ContainerRequestFilter {
 
             // SecurityContext setzen, damit Benutzerinfos später verfügbar sind
             requestContext.setSecurityContext(
-                    SecurityContextFactory.create(username, role, requestContext.getSecurityContext())
+                    SecurityContextFactory.create(username, role, requestContext.getSecurityContext(), expiration)
             );
 
             // Rollenbasierter Zugriff prüfen
