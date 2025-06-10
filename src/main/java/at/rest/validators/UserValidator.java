@@ -12,6 +12,14 @@ public class UserValidator {
 
     public void validate(RegisterUserDTO dto) {
 
+        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
+            throw new ValidationException("email darf nicht leer sein");
+        }
+
+        if (dto.getUsername() == null || dto.getUsername().trim().isEmpty()) {
+            throw new ValidationException("username darf nicht leer sein");
+        }
+
         if (!isPasswordValid(dto.getPassword())) {
             throw new ValidationException("Passwort zu schwach – mindestens 8 Zeichen, ein Großbuchstabe, ein Kleinbuchstabe und eine Zahl erforderlich.");
         }
