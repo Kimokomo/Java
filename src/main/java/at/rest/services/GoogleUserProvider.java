@@ -3,6 +3,7 @@ package at.rest.services;
 import at.rest.factories.UserFactory;
 import at.rest.models.User;
 import at.rest.repositories.UserRepository;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -14,20 +15,19 @@ public class GoogleUserProvider {
     @Inject
     UserFactory userFactory;
 
-    public User findOrCreateGoogleUser(String email, String googleId, String name) {
+    public User findOrCreateGoogleUser(GoogleIdToken.Payload payload) {
 
-        //Suche nach Google ID
-        User user = userRepository.findByGoogleId(googleId).orElse(null);
+        User user = userRepository.findByGoogleId(payload.getSubject()).orElse(null);
         if (user != null) {
             return user;
         }
 
-        user = userRepository.findByEmail(email).orElse(null);
+        user = userRepository.findByEmail(payload.getEmail()).orElse(null);
         if (user != null) {
             return user;
         }
 
-        User newUser = userFactory.createFromGoogle(email, googleId, name);
+        User newUser = userFactory.createFromGoogle(payload);
 
         userRepository.saveOrUpdate(newUser);
         userRepository.saveOrUpdate(newUser);

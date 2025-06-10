@@ -26,11 +26,7 @@ public class GoogleAuthService {
             throw new AuthenticationException("Ungültiges Google Token.");
         }
 
-        String email = payload.getEmail();
-        String googleId = payload.getSubject();
-        String name = (String) payload.get("name");
-
-        User user = googleUserProvider.findOrCreateGoogleUser(email, googleId, name);
+        User user = googleUserProvider.findOrCreateGoogleUser(payload);
 
         return jwtService.createJwtForUser(user);
     }
