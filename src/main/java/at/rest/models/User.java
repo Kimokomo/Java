@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Getter
@@ -28,6 +29,9 @@ public class User {
     private Integer age;
     private boolean confirmed;
 
+    private String forgotPasswordToken;
+    private LocalDateTime forgotPasswordTokenExpiry;
+
     @Column(name = "confirmation_token")
     private String confirmationToken;
 
@@ -48,4 +52,6 @@ public class User {
 
     @Column(nullable = false)
     private String role; // "user", "admin", "superadmin" // besser enum
+
+    private LocalDateTime tstamp;
 }

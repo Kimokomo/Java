@@ -1,6 +1,7 @@
 package at.rest.controllers;
 
 import at.rest.dtos.CredentialsDTO;
+import at.rest.dtos.ForgotPassDTO;
 import at.rest.dtos.RegisterUserDTO;
 import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
@@ -88,6 +89,24 @@ public class AuthController {
             userService.confirmEmail(token);
             return Response.ok(new MessageResponse("Email confirmed. You can now log in.")).build();
         } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new MessageResponse(e.getMessage()))
+                    .build();
+        }
+    }
+
+    // --- PASSWORT VERGESSEN --- //
+    @POST
+    @Path("/forgot")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response forgotPassword(ForgotPassDTO dto) {
+        try {
+
+            userService.forgotPass(dto);
+            return Response.ok().entity(new MessageResponse("Mail prüfen")).build();
+
+        } catch (AuthenticationException e) {
+
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new MessageResponse(e.getMessage()))
                     .build();

@@ -1,5 +1,6 @@
 package at.rest.services;
 
+import at.rest.dtos.ForgotPassDTO;
 import at.rest.dtos.RegisterUserDTO;
 import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
@@ -14,6 +15,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.SecurityContext;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -134,5 +136,33 @@ public class UserService {
         user.setConfirmed(true);
         user.setConfirmationToken(null);
         userRepository.update(user);
+    }
+
+    public void forgotPass(ForgotPassDTO dto) {
+        String emailOrUsername = dto.getEmailOrUsername();
+
+        Optional<User> userOpt;
+
+        if (mailService.isValidEmailSyntax(emailOrUsername)) {
+            userOpt = userRepository.findByEmail(emailOrUsername);
+        } else {
+            userOpt = userRepository.findByUsername(emailOrUsername);
+        }
+
+        if (userOpt.isEmpty()) {
+            throw new AuthenticationException("E-Mail oder Benutzername nicht vorhanden");
+        }
+
+        User user = userOpt.get();
+
+        // Token generieren
+        String token = UUID.randomUUID().toString();
+
+        // Token + Ablauf speichern
+        user.setForgotPasswordToken(token);
+        user.setForgotPasswordTokenExpiry(LocalDateTime.now().plusMinutes(30));
+        userRepository.update(user);
+
+        mailService.sendForgotPasswordEmail(user.getEmail(), token);
     }
 }

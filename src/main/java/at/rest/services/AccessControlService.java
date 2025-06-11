@@ -10,7 +10,7 @@ public class AccessControlService {
 
     public boolean isPublicPath(String path) {
         return Set.of(
-                "", "/auth/login", "/auth/register", "/auth/confirm", "/auth/google", "/hello"
+                "", "/hello", "/auth/login", "/auth/register", "/auth/confirm", "/auth/google", "/auth/forgot"
         ).contains(path);
     }
 
