@@ -101,12 +101,9 @@ public class AuthController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response forgotPassword(ForgotPassDTO dto) {
         try {
-
             userService.forgotPass(dto);
             return Response.ok().entity(new MessageResponse("Mail prüfen")).build();
-
         } catch (AuthenticationException e) {
-
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new MessageResponse(e.getMessage()))
                     .build();

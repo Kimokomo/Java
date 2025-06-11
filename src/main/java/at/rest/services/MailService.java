@@ -8,6 +8,7 @@ import jakarta.mail.internet.MimeMessage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -47,7 +48,6 @@ public class MailService {
                 return new PasswordAuthentication(username, password);
             }
         });
-
     }
 
     public boolean sendConfirmationEmail(String recipient, String token) {
@@ -58,9 +58,8 @@ public class MailService {
 
         String confirmationLink = baseUrl + token;
         String subject = "Willkommen bei SliceIt – Bitte bestätige deine Registrierung";
-        String htmlContent = getConfirmationEmailHtmlContent(confirmationLink);
+        String htmlContent = loadTemplate("confirmation-email.html", confirmationLink);
         return sendEmail(recipient, subject, htmlContent);
-
     }
 
     public boolean sendForgotPasswordEmail(String recipient, String token) {
@@ -71,7 +70,8 @@ public class MailService {
 
         String resetLink = baseUrl + token;
         String subject = "Passwort zurücksetzen – SliceIt";
-        String htmlContent = getForgotPasswordEmailHtmlContent(resetLink);
+        String htmlContent = loadTemplate("forgot-password-email.html", resetLink);
+
         return sendEmail(recipient, subject, htmlContent);
     }
 
@@ -102,56 +102,16 @@ public class MailService {
         }
     }
 
-    private static String getConfirmationEmailHtmlContent(String confirmationLink) {
-        String htmlTemplate = """
-                <html>
-                <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
-                    <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <h2 style="color: #333333;">👋 Willkommen bei <span style="color: #007bff;">SliceIt</span>!</h2>
-                        <p style="font-size: 16px; color: #555555;">
-                            Schön, dass du dich registriert hast. Bitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Button klickst:
-                        </p>
-                        <p style="text-align: center;">
-                            <a href="{{link}}" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                                Registrierung bestätigen
-                            </a>
-                        </p>
-                        <p style="font-size: 14px; color: #999999; margin-top: 30px;">
-                            Falls der Button nicht funktioniert, kannst du auch diesen Link in deinem Browser öffnen:<br>
-                            <a href="{{link}}">{{link}}</a>
-                        </p>
-                        <p style="font-size: 14px; color: #bbbbbb; margin-top: 40px;">Diese Nachricht wurde automatisch generiert. Bitte nicht darauf antworten.</p>
-                    </div>
-                </body>
-                </html>
-                """;
-        return htmlTemplate.replace("{{link}}", confirmationLink);
-    }
-
-    private static String getForgotPasswordEmailHtmlContent(String resetLink) {
-        String htmlTemplate = """
-                <html>
-                <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
-                    <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <h2 style="color: #333333;">🔐 Passwort zurücksetzen</h2>
-                        <p style="font-size: 16px; color: #555555;">
-                            Du hast dein Passwort vergessen? Kein Problem! Klicke auf den folgenden Button, um es zurückzusetzen:
-                        </p>
-                        <p style="text-align: center;">
-                            <a href="{{link}}" style="display: inline-block; padding: 12px 24px; background-color: #dc3545; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                                Passwort zurücksetzen
-                            </a>
-                        </p>
-                        <p style="font-size: 14px; color: #999999; margin-top: 30px;">
-                            Falls der Button nicht funktioniert, kannst du auch diesen Link in deinem Browser öffnen:<br>
-                            <a href="{{link}}">{{link}}</a>
-                        </p>
-                        <p style="font-size: 14px; color: #bbbbbb; margin-top: 40px;">Diese Nachricht wurde automatisch generiert. Bitte nicht darauf antworten.</p>
-                    </div>
-                </body>
-                </html>
-                """;
-        return htmlTemplate.replace("{{link}}", resetLink);
+    private String loadTemplate(String templateName, String link) {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("templates/" + templateName)) {
+            if (inputStream == null) {
+                throw new RuntimeException("Template nicht gefunden: " + templateName);
+            }
+            String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            return content.replace("{{link}}", link);
+        } catch (IOException e) {
+            throw new RuntimeException("Fehler beim Laden des Templates: " + templateName, e);
+        }
     }
 }
 
