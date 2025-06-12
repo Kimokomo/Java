@@ -1,5 +1,6 @@
 package at.rest.filters;
 
+import at.rest.enums.Role;
 import at.rest.factories.SecurityContextFactory;
 import at.rest.services.AccessControlService;
 import at.rest.services.JwtService;
@@ -59,10 +60,12 @@ public class JWTAuthFilter implements ContainerRequestFilter {
             claims = jwtService.parseAndValidateToken(token);
 
             String username = claims.getSubject();
-            String role = claims.get("role", String.class);
+           // String role = claims.get("role", String.class);
+            Role role = Role.valueOf(claims.get("role", String.class));
+
             Date expiration = claims.getExpiration();
 
-            if (username == null || role == null) {
+            if (username == null) {
                 logger.warning("JWT token missing required claims");
                 abort(requestContext);
                 return;

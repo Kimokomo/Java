@@ -1,5 +1,6 @@
 package at.rest.models;
 
+import at.rest.enums.Role;
 import jakarta.ws.rs.core.SecurityContext;
 
 import java.security.Principal;
@@ -8,11 +9,11 @@ import java.util.Date;
 public class CustomSecurityContext implements SecurityContext {
 
     private final String username;
-    private final String role;
+    private final Role role;
     private final boolean isSecure;
     private final Date expiration;
 
-    public CustomSecurityContext(String username, String role, boolean isSecure, Date expiration) {
+    public CustomSecurityContext(String username, Role role, boolean isSecure, Date expiration) {
         this.username = username;
         this.role = role;
         this.isSecure = isSecure;
@@ -26,7 +27,11 @@ public class CustomSecurityContext implements SecurityContext {
 
     @Override
     public boolean isUserInRole(String roleName) {
-        return role.equals(roleName);
+        try {
+            return role.equals(Role.valueOf(roleName));
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override

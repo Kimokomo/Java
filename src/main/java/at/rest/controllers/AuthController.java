@@ -115,8 +115,14 @@ public class AuthController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response resetPassword(@Valid ResetPasswordDTO dto) {
-        userService.resetPassword(dto);
-        return Response.ok(new MessageResponse("Ihr Passwort wurde erfolgreich zurückgesetzt.")).build();
+        try {
+            userService.resetPassword(dto);
+            return Response.ok(new MessageResponse("Ihr Passwort wurde erfolgreich zurückgesetzt.")).build();
+        } catch (AuthenticationException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new MessageResponse(e.getMessage()))
+                    .build();
+        }
     }
 
     // --- GET USERINFO FROM SECURITY CONTEXT //

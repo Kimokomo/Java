@@ -1,5 +1,6 @@
 package at.rest.factories;
 
+import at.rest.enums.Role;
 import at.rest.models.User;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -16,7 +17,7 @@ public class GoogleUserFactory {
         user.setLastname((String) payload.get("family_name"));
         user.setConfirmed((Boolean) payload.get("email_verified"));
 
-        user.setRole("user");
+        user.setRole(Role.getDefault());
         user.setPasswordHash("GOOGLE_LOGIN_HASH_PASSWORD");
         user.setPassword("GOOGLE_LOGIN_PASSWORD");
 

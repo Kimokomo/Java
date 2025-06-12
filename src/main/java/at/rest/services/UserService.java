@@ -3,6 +3,7 @@ package at.rest.services;
 import at.rest.dtos.ForgotPassDTO;
 import at.rest.dtos.RegisterUserDTO;
 import at.rest.dtos.ResetPasswordDTO;
+import at.rest.enums.Role;
 import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
 import at.rest.mappers.UserMapper;
@@ -41,7 +42,7 @@ public class UserService {
         }
 
         String username = securityContext.getUserPrincipal().getName();
-        String role = resolveRole(securityContext);
+        Role role = resolveRole(securityContext);
 
         Date tokenExpiration = null;
 
@@ -49,14 +50,15 @@ public class UserService {
             tokenExpiration = customCtx.getTokenExpiration();
         }
 
-        return new UserInfoResponse(username, role, tokenExpiration);
+        return new UserInfoResponse(username, role.name().toLowerCase(), tokenExpiration);
     }
 
-    private String resolveRole(SecurityContext securityContext) {
-        if (securityContext.isUserInRole("superadmin")) return "superadmin";
-        if (securityContext.isUserInRole("admin")) return "admin";
-        if (securityContext.isUserInRole("user")) return "user";
-        return "unknown";
+
+    private Role resolveRole(SecurityContext securityContext) {
+        if (securityContext.isUserInRole("SUPERADMIN")) return Role.SUPERADMIN;
+        if (securityContext.isUserInRole("ADMIN")) return Role.ADMIN;
+        if (securityContext.isUserInRole("USER")) return Role.USER;
+        return Role.UNKNOWN;
     }
 
 
@@ -100,7 +102,9 @@ public class UserService {
         String token = UUID.randomUUID().toString();
         user.setConfirmed(false);
         user.setConfirmationToken(token);
-        user.setRole("user");
+        user.setRole(Role.getDefault());
+
+        user.setTstamp(LocalDateTime.now());
 
         // Speichern
         userRepository.saveNew(user);

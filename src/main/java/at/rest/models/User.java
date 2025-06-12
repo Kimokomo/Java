@@ -1,5 +1,6 @@
 package at.rest.models;
 
+import at.rest.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,7 +30,9 @@ public class User {
     private Integer age;
     private boolean confirmed;
 
+    @Column(name = "forgot_Password_Token")
     private String forgotPasswordToken;
+    @Column(name = "forgot_Password_Token_Expiry_Time_and_date")
     private LocalDateTime forgotPasswordTokenExpiry;
 
     @Column(name = "confirmation_token")
@@ -45,13 +48,15 @@ public class User {
     private String email;
 
     @Column(name = "password_plain")
+    @Transient
     private String password;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role; // "user", "admin", "superadmin" // besser enum
+    private Role role;
 
     private LocalDateTime tstamp;
 }
