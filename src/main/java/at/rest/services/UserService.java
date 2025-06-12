@@ -133,16 +133,12 @@ public class UserService {
         userRepository.update(user);
     }
 
-    public void forgotPass(ForgotPassDTO dto) {
+    public void forgotPassword(ForgotPassDTO dto) {
         String emailOrUsername = dto.getEmailOrUsername();
 
-        Optional<User> userOpt;
-
-        if (mailService.isValidEmailSyntax(emailOrUsername)) {
-            userOpt = userRepository.findByEmail(emailOrUsername);
-        } else {
-            userOpt = userRepository.findByUsername(emailOrUsername);
-        }
+        Optional<User> userOpt = mailService.isValidEmailSyntax(emailOrUsername)
+                ? userRepository.findByEmail(emailOrUsername)
+                : userRepository.findByUsername(emailOrUsername);
 
         if (userOpt.isEmpty()) {
             throw new AuthenticationException("E-Mail oder Benutzername nicht vorhanden");
@@ -163,5 +159,35 @@ public class UserService {
 
     public void resetPassword(ResetPasswordDTO dto) {
 
+        // Token, neues Passwort und Bestätigung extrahieren
+        String token = dto.getToken();
+        String newPassword = dto.getNewPassword();
+        String confirmNewPassword = dto.getConfirmNewPassword();
+
+        // Passwort bestätigen kontrolle
+        if (!newPassword.equals(confirmNewPassword)) {
+            throw new AuthenticationException("Passwörter stimmen nicht überein");
+        }
+
+        // Benutzer mit gültigem Token finden
+        User user = userRepository.findByForgotPasswordToken(token)
+                .orElseThrow(() -> new AuthenticationException("Ungültiger oder abgelaufener Token"));
+
+        // Token-Ablaufzeit prüfen
+        if (user.getForgotPasswordTokenExpiry() == null || user.getForgotPasswordTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new AuthenticationException("Token ist abgelaufen");
+        }
+
+        // Neues Passwort hashen und setzen
+        String hashedPassword = BCrypt.hashpw(dto.getConfirmNewPassword(), BCrypt.gensalt());
+        user.setPasswordHash(hashedPassword);
+        user.setPassword(null);
+
+        // Token invalidieren
+        user.setForgotPasswordToken(null);
+        user.setForgotPasswordTokenExpiry(null);
+
+        // Speichern
+        userRepository.update(user);
     }
 }

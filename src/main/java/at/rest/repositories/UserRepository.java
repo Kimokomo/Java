@@ -38,6 +38,13 @@ public class UserRepository {
         return query.getResultStream().findFirst();
     }
 
+    public Optional<User> findByForgotPasswordToken(String token) {
+        var query = em.createQuery("SELECT u FROM User u WHERE u.forgotPasswordToken = :token", User.class);
+        query.setParameter("token", token);
+        return query.getResultStream().findFirst();
+    }
+
+
     @Transactional
     public void saveNew(User user) {
         if (user.getId() != null) {

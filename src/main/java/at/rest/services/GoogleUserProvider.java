@@ -1,6 +1,6 @@
 package at.rest.services;
 
-import at.rest.factories.UserFactory;
+import at.rest.factories.GoogleUserFactory;
 import at.rest.models.User;
 import at.rest.repositories.UserRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -13,7 +13,7 @@ public class GoogleUserProvider {
     @Inject
     UserRepository userRepository;
     @Inject
-    UserFactory userFactory;
+    GoogleUserFactory googleUserFactory;
 
     public User findOrCreateGoogleUser(GoogleIdToken.Payload payload) {
 
@@ -27,7 +27,7 @@ public class GoogleUserProvider {
             return user;
         }
 
-        User newUser = userFactory.createFromGoogle(payload);
+        User newUser = googleUserFactory.createFromGoogle(payload);
 
         userRepository.saveOrUpdate(newUser);
         userRepository.saveOrUpdate(newUser);

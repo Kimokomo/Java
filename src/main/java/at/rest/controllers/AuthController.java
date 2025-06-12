@@ -58,7 +58,7 @@ public class AuthController {
                     .entity(new MessageResponse(e.getMessage())).build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new MessageResponse("Google Login fehlgeschlagen")).build();
+                    .entity(new MessageResponse("Die Anmeldung über Google war leider nicht erfolgreich.")).build();
         }
     }
 
@@ -67,17 +67,15 @@ public class AuthController {
     @Path("/register")
     public Response register(@Valid RegisterUserDTO dto) {
         try {
-
             User user = userService.registerNewUser(dto);
-            return Response.ok().entity(new MessageResponse("Registration successful. Please confirm your email address.")).build();
-
+            return Response.ok().entity(new MessageResponse("Registrierung erfolgreich. Bitte bestätigen Sie Ihre E-Mail-Adresse.")).build();
         } catch (DuplicateException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new MessageResponse(e.getMessage()))
                     .build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new MessageResponse("An error occurred during registration"))
+                    .entity(new MessageResponse("Während der Registrierung ist ein Fehler aufgetreten."))
                     .build();
         }
     }
@@ -88,7 +86,7 @@ public class AuthController {
     public Response confirmEmail(@QueryParam("token") String token) {
         try {
             userService.confirmEmail(token);
-            return Response.ok(new MessageResponse("Email confirmed. You can now log in.")).build();
+            return Response.ok(new MessageResponse("E-Mail bestätigt. Sie können sich jetzt anmelden.")).build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new MessageResponse(e.getMessage()))
@@ -100,10 +98,10 @@ public class AuthController {
     @POST
     @Path("/forgot")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response forgotPassword(ForgotPassDTO dto) {
+    public Response forgotPassword(@Valid ForgotPassDTO dto) {
         try {
-            userService.forgotPass(dto);
-            return Response.ok().entity(new MessageResponse("Mail prüfen")).build();
+            userService.forgotPassword(dto);
+            return Response.ok().entity(new MessageResponse("Wir haben dir eine E-Mail geschickt, mit der du dein Passwort zurücksetzen kannst.")).build();
         } catch (AuthenticationException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new MessageResponse(e.getMessage()))
@@ -118,14 +116,13 @@ public class AuthController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response resetPassword(@Valid ResetPasswordDTO dto) {
         userService.resetPassword(dto);
-        return Response.ok(new MessageResponse("Passwort zurückgesetzt")).build();
+        return Response.ok(new MessageResponse("Ihr Passwort wurde erfolgreich zurückgesetzt.")).build();
     }
 
     // --- GET USERINFO FROM SECURITY CONTEXT //
     @GET
     @Path("member/userinfo")
     @Produces(MediaType.APPLICATION_JSON)
-
     public Response getUserInfo(@Context SecurityContext securityContext) {
         try {
             UserInfoResponse userInfo = userService.getUserInfo(securityContext);

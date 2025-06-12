@@ -10,6 +10,9 @@ import lombok.Setter;
 @Setter
 public class ResetPasswordDTO {
 
+    @NotBlank(message = "Token darf nicht leer sein")
+    private String token;
+
     @NotBlank
     @Size(min = 8, message = "Passwort muss mindestens 8 Zeichen lang sein")
     @Pattern(

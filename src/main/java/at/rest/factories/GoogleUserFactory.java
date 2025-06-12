@@ -5,7 +5,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class UserFactory {
+public class GoogleUserFactory {
     public User createFromGoogle(GoogleIdToken.Payload payload) {
         User user = new User();
 
