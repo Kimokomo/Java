@@ -31,7 +31,14 @@
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
             <version>${jakarta.jpa.version}</version>
-            <scope>provided</scope> <!-- Provided, da vom Server geliefert -->
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Jakarta Bean Validation -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.0.2</version>
         </dependency>
 
         <!-- Hibernate JPA Implementation -->
@@ -93,7 +100,6 @@
             <scope>provided</scope>
         </dependency>
 
-
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
@@ -103,7 +109,7 @@
         <dependency>
             <groupId>jakarta.ejb</groupId>
             <artifactId>jakarta.ejb-api</artifactId>
-            <version>4.0.0</version> <!-- oder kompatible Version mit deinem WildFly -->
+            <version>4.0.0</version>
             <scope>provided</scope>
         </dependency>
 

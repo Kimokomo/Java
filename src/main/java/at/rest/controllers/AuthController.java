@@ -3,6 +3,7 @@ package at.rest.controllers;
 import at.rest.dtos.CredentialsDTO;
 import at.rest.dtos.ForgotPassDTO;
 import at.rest.dtos.RegisterUserDTO;
+import at.rest.dtos.ResetPasswordDTO;
 import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
 import at.rest.exceptions.ValidationException;
@@ -14,6 +15,7 @@ import at.rest.responses.UserInfoResponse;
 import at.rest.services.GoogleAuthService;
 import at.rest.services.UserService;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -110,10 +112,21 @@ public class AuthController {
         }
     }
 
+    // --- PASSWORT ZURÜCKSETZEN --- //
+    @POST
+    @Path("/reset-password")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response resetPassword(@Valid ResetPasswordDTO dto) {
+        userService.resetPassword(dto);
+        return Response.ok(new MessageResponse("Passwort zurückgesetzt")).build();
+    }
+
     // --- GET USERINFO FROM SECURITY CONTEXT //
     @GET
     @Path("member/userinfo")
     @Produces(MediaType.APPLICATION_JSON)
+
     public Response getUserInfo(@Context SecurityContext securityContext) {
         try {
             UserInfoResponse userInfo = userService.getUserInfo(securityContext);

@@ -2,6 +2,7 @@ package at.rest.services;
 
 import at.rest.dtos.ForgotPassDTO;
 import at.rest.dtos.RegisterUserDTO;
+import at.rest.dtos.ResetPasswordDTO;
 import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
 import at.rest.mappers.UserMapper;
@@ -164,5 +165,9 @@ public class UserService {
         userRepository.update(user);
 
         mailService.sendForgotPasswordEmail(user.getEmail(), token);
+    }
+
+    public void resetPassword(ResetPasswordDTO dto) {
+
     }
 }
