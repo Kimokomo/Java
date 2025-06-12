@@ -10,7 +10,6 @@ import at.rest.models.CustomSecurityContext;
 import at.rest.models.User;
 import at.rest.repositories.UserRepository;
 import at.rest.responses.UserInfoResponse;
-import at.rest.validators.UserValidator;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.SecurityContext;
@@ -26,9 +25,6 @@ public class UserService {
 
     @Inject
     private UserRepository userRepository;
-
-    @Inject
-    private UserValidator userValidator;
 
     @Inject
     private UserMapper userMapper;
@@ -90,8 +86,6 @@ public class UserService {
 
     public User registerNewUser(RegisterUserDTO dto) {
 
-        // Validierung zentral über Validator
-        userValidator.validate(dto);
         checkDuplicateUser(dto);
 
         // DTO in User umwandeln

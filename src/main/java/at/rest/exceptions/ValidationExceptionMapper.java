@@ -11,12 +11,14 @@ import java.util.Map;
 
 @Provider
 public class ValidationExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
+
     @Override
     public Response toResponse(ConstraintViolationException e) {
         Map<String, String> errors = new HashMap<>();
 
         for (ConstraintViolation<?> violation : e.getConstraintViolations()) {
-            String field = violation.getPropertyPath().toString();
+            String fieldPath = violation.getPropertyPath().toString();
+            String field = fieldPath.contains(".") ? fieldPath.substring(fieldPath.lastIndexOf('.') + 1) : fieldPath;
             String message = violation.getMessage();
             errors.put(field, message);
         }

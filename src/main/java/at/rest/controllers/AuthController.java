@@ -6,7 +6,6 @@ import at.rest.dtos.RegisterUserDTO;
 import at.rest.dtos.ResetPasswordDTO;
 import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
-import at.rest.exceptions.ValidationException;
 import at.rest.models.User;
 import at.rest.requests.GoogleTokenRequest;
 import at.rest.responses.JwtResponse;
@@ -66,13 +65,13 @@ public class AuthController {
     // --- REGISTER --- //
     @POST
     @Path("/register")
-    public Response register(RegisterUserDTO dto) {
+    public Response register(@Valid RegisterUserDTO dto) {
         try {
+
             User user = userService.registerNewUser(dto);
-            return Response.status(Response.Status.CREATED)
-                    .entity(new MessageResponse("Registration successful. Please confirm your email address."))
-                    .build();
-        } catch (ValidationException | DuplicateException e) {
+            return Response.ok().entity(new MessageResponse("Registration successful. Please confirm your email address.")).build();
+
+        } catch (DuplicateException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new MessageResponse(e.getMessage()))
                     .build();
