@@ -28,35 +28,39 @@ public class User {
     private String firstname;
     private String lastname;
     private Integer age;
-    private boolean confirmed;
-
-    @Column(name = "forgot_Password_Token")
-    private String forgotPasswordToken;
-    @Column(name = "forgot_Password_Token_Expiry_Time_and_date")
-    private LocalDateTime forgotPasswordTokenExpiry;
 
     @Column(name = "confirmation_token")
     private String confirmationToken;
+    @Column(name = "confirmed_mail")
+    private boolean confirmed;
+    @Column(name = "google_confirmed_mail")
+    private boolean googleConfirmed;
+
+    @Column(name = "forgot_password_token")
+    private String forgotPasswordToken;
+    @Column(name = "forgot_password_token_expiry_time_and_date")
+    private LocalDateTime forgotPasswordTokenExpiry;
 
     @Column(name = "birthdate")
     private LocalDate dateOfBirth;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "username", unique = true, nullable = false)
     private String username;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password_plain")
     @Transient
+    @Column(name = "password_plain")
     private String password;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "role", nullable = false)
     private Role role;
 
+    @Column(name = "time_stamp")
     private LocalDateTime tstamp;
 }

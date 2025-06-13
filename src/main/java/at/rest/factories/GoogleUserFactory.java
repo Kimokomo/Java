@@ -5,6 +5,8 @@ import at.rest.models.User;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.time.LocalDateTime;
+
 @ApplicationScoped
 public class GoogleUserFactory {
     public User createFromGoogle(GoogleIdToken.Payload payload) {
@@ -15,11 +17,12 @@ public class GoogleUserFactory {
         user.setUsername(payload.getEmail());
         user.setFirstname((String) payload.get("given_name"));
         user.setLastname((String) payload.get("family_name"));
-        user.setConfirmed((Boolean) payload.get("email_verified"));
+        user.setGoogleConfirmed((Boolean) payload.get("email_verified"));
 
         user.setRole(Role.getDefault());
         user.setPasswordHash("GOOGLE_LOGIN_HASH_PASSWORD");
-        user.setPassword("GOOGLE_LOGIN_PASSWORD");
+
+        user.setTstamp(LocalDateTime.now());
 
         return user;
     }

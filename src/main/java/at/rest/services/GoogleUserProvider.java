@@ -30,7 +30,6 @@ public class GoogleUserProvider {
         User newUser = googleUserFactory.createFromGoogle(payload);
 
         userRepository.saveOrUpdate(newUser);
-        userRepository.saveOrUpdate(newUser);
         return newUser;
     }
 }
