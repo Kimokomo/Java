@@ -1,7 +1,7 @@
 package at.rest.factories;
 
 import at.rest.enums.Role;
-import at.rest.models.CustomSecurityContext;
+import at.rest.models.context.CustomSecurityContext;
 import jakarta.ws.rs.core.SecurityContext;
 
 import java.util.Date;

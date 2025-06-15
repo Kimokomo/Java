@@ -1,4 +1,4 @@
-package at.rest.services;
+package at.rest.services.auth.oauth2;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;

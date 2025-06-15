@@ -1,4 +1,4 @@
-package at.rest.exceptions;
+package at.rest.exception_mapper;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;

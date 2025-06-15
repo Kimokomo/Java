@@ -1,7 +1,7 @@
 package at.rest.factories;
 
 import at.rest.enums.Role;
-import at.rest.models.User;
+import at.rest.models.entities.User;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import jakarta.enterprise.context.ApplicationScoped;
 

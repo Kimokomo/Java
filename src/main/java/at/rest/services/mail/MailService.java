@@ -1,4 +1,4 @@
-package at.rest.services;
+package at.rest.services.mail;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.mail.*;

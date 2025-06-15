@@ -1,4 +1,4 @@
-package at.rest.services;
+package at.rest.services.auth;
 
 import at.rest.enums.Role;
 import jakarta.enterprise.context.ApplicationScoped;

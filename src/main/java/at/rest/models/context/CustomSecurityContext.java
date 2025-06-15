@@ -1,4 +1,4 @@
-package at.rest.models;
+package at.rest.models.context;
 
 import at.rest.enums.Role;
 import jakarta.ws.rs.core.SecurityContext;

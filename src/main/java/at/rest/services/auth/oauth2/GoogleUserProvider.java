@@ -1,7 +1,7 @@
-package at.rest.services;
+package at.rest.services.auth.oauth2;
 
 import at.rest.factories.GoogleUserFactory;
-import at.rest.models.User;
+import at.rest.models.entities.User;
 import at.rest.repositories.UserRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import jakarta.enterprise.context.ApplicationScoped;

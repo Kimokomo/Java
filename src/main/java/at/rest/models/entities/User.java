@@ -1,11 +1,13 @@
-package at.rest.models;
+package at.rest.models.entities;
 
 import at.rest.enums.Role;
+import at.rest.models.compositeKeys.AppointmentUser;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Getter
@@ -63,4 +65,9 @@ public class User {
 
     @Column(name = "time_stamp")
     private LocalDateTime tstamp;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AppointmentUser> appointmentUsers;
+
+
 }

@@ -1,4 +1,4 @@
-package at.rest.services;
+package at.rest.services.user;
 
 import at.rest.dtos.ForgotPassDTO;
 import at.rest.dtos.RegisterUserDTO;
@@ -7,10 +7,12 @@ import at.rest.enums.Role;
 import at.rest.exceptions.AuthenticationException;
 import at.rest.exceptions.DuplicateException;
 import at.rest.mappers.UserMapper;
-import at.rest.models.CustomSecurityContext;
-import at.rest.models.User;
+import at.rest.models.context.CustomSecurityContext;
+import at.rest.models.entities.User;
 import at.rest.repositories.UserRepository;
 import at.rest.responses.UserInfoResponse;
+import at.rest.services.auth.JwtService;
+import at.rest.services.mail.MailService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.SecurityContext;
@@ -193,5 +195,9 @@ public class UserService {
 
         // Speichern
         userRepository.update(user);
+    }
+
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
     }
 }
